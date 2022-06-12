@@ -2,7 +2,7 @@
   text-align: center;
 }
 
-.Deck-button {
+button {
   padding: 15px;
   background-color: black;
   color: white;
@@ -11,14 +11,21 @@
   margin: 0 10px;
 }
 
-.Deck-button:hover {
+button:hover {
   cursor: pointer;
   background-color: #444;
 }
 
-.Deck-button:active,
-.Deck-button:focus {
+button:active,
+button:focus {
   outline: none;
+}
+
+span {
+  display: block;
+  margin: 1em 0;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .Deck-cardarea {

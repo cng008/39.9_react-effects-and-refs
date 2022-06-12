@@ -9,6 +9,7 @@ const Deck = () => {
   const [deck, setDeck] = useState(null)
   const [drawn, setDrawn] = useState([])
   const [clicked, setClicked] = useState(false)
+  const [remaining, setRemaining] = useState(52)
 
   /* At mount: load deck from API into state. */
   useEffect(() => {
@@ -19,7 +20,8 @@ const Deck = () => {
     fetchDeck()
   }, [setDeck])
 
-  if (clicked) {
+  /* Draw one card on click */
+  useEffect(() => {
     /* Draw a card via API, add card to state "drawn" list */
     async function drawCard() {
       const { deck_id } = deck
@@ -27,8 +29,8 @@ const Deck = () => {
       try {
         const res = await axios.get(`${BASE_URL}/${deck_id}/draw/`)
 
+        setRemaining(res.data.remaining)
         if (res.data.remaining === 0) {
-          // setClicked(false)
           throw new Error('no cards remaining!')
         }
 
@@ -46,17 +48,36 @@ const Deck = () => {
         alert(err)
       }
     }
-    drawCard()
+
+    // only call drawCard() when button is clicked
+    if (clicked) {
+      drawCard()
+    }
+
+    // clean up function to reset setClicked to false
+    return () => {
+      setClicked(false)
+    }
+  }, [clicked, deck])
+
+  // shuffle using the same deck_id on mount
+  async function shuffled() {
+    const { deck_id } = deck
+    const res = await axios.get(`${BASE_URL}/${deck_id}/shuffle/`)
+    setDeck(res.data)
   }
 
-  const draw = () => {
-    setClicked(true)
+  // runs when user clicks on button to draw card. Will setClicked to True, which then triggers the useEffect to drawCard
+  const toggleDraw = () => {
+    setClicked(clicked => !clicked)
   }
-  //   const reset = () => {
-  //     setDeck(null)
-  //     setDrawn([])
-  //     setClicked(false)
-  //   }
+
+  //
+  const shuffle = () => {
+    shuffled()
+    setDrawn([])
+    setRemaining(52)
+  }
 
   const cards = drawn.map(c => (
     <Card key={c.id} name={c.name} image={c.image} />
@@ -64,10 +85,9 @@ const Deck = () => {
 
   return (
     <div className="Deck">
-      <button className="Deck-button" onClick={draw}>
-        DRAW!
-      </button>
-      {/* <button onClick={reset}>RESTART</button> */}
+      <button onClick={toggleDraw}>DRAW!</button>
+      <button onClick={shuffle}>SHUFFLE</button>
+      {remaining === 0 ? null : <span>Remaining: {remaining - 1}</span>}
       <div className="Deck-cardarea">{cards}</div>
     </div>
   )
