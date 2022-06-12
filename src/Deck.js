@@ -18,8 +18,7 @@ const Deck = () => {
     fetchDeck()
   }, [setDeck])
 
-  /* Draw one card on click */
-  useEffect(() => {
+  if (clicked) {
     /* Draw a card via API, add card to state "drawn" list */
     async function drawCard() {
       const { deck_id } = deck
@@ -46,22 +45,12 @@ const Deck = () => {
         alert(err)
       }
     }
-
-    if (clicked) {
-      drawCard()
-    }
-
-    // clean up function to reset setClicked to false
-    return () => {
-      setClicked(false)
-    }
-  }, [clicked, deck])
-
-  // runs when user clicks on button to draw card. Will setClicked to True, which then triggers the useEffect to drawCard
-  const toggleDraw = () => {
-    setClicked(clicked => !clicked)
+    drawCard()
   }
 
+  const draw = () => {
+    setClicked(true)
+  }
   //   const reset = () => {
   //     setDeck(null)
   //     setDrawn([])
@@ -74,7 +63,7 @@ const Deck = () => {
 
   return (
     <div>
-      <button onClick={toggleDraw}>DRAW!</button>
+      <button onClick={draw}>DRAW!</button>
       {/* <button onClick={reset}>RESTART</button> */}
       <div>{cards}</div>
     </div>
