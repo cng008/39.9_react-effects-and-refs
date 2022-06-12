@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import Card from './Card'
+import './Deck.css'
 
 const BASE_URL = 'http://deckofcardsapi.com/api/deck'
 
@@ -62,10 +63,12 @@ const Deck = () => {
   ))
 
   return (
-    <div>
-      <button onClick={draw}>DRAW!</button>
+    <div className="Deck">
+      <button className="Deck-button" onClick={draw}>
+        DRAW!
+      </button>
       {/* <button onClick={reset}>RESTART</button> */}
-      <div>{cards}</div>
+      <div className="Deck-cardarea">{cards}</div>
     </div>
   )
 }
