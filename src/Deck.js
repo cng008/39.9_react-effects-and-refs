@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import Card from './Card'
 import './Deck.css'
@@ -8,8 +8,9 @@ const BASE_URL = 'http://deckofcardsapi.com/api/deck'
 const Deck = () => {
   const [deck, setDeck] = useState(null)
   const [drawn, setDrawn] = useState([])
-  const [clicked, setClicked] = useState(false)
   const [remaining, setRemaining] = useState(52)
+  const [autoDraw, setAutoDraw] = useState(false)
+  const timerRef = useRef(null)
 
   /* At mount: load deck from API into state. */
   useEffect(() => {
@@ -31,6 +32,7 @@ const Deck = () => {
 
         setRemaining(res.data.remaining)
         if (res.data.remaining === 0) {
+          setAutoDraw(false)
           throw new Error('no cards remaining!')
         }
 
@@ -49,16 +51,19 @@ const Deck = () => {
       }
     }
 
-    // only call drawCard() when button is clicked
-    if (clicked) {
-      drawCard()
+    // drawCard() every second until deck is empty
+    if (autoDraw && !timerRef.current) {
+      timerRef.current = setInterval(async () => {
+        await drawCard()
+      }, 500)
     }
 
-    // clean up function to reset setClicked to false
+    // clean up function to reset timer
     return () => {
-      setClicked(false)
+      clearInterval(timerRef.current)
+      timerRef.current = null
     }
-  }, [clicked, deck])
+  }, [autoDraw, setAutoDraw, deck])
 
   // shuffle using the same deck_id on mount
   async function shuffled() {
@@ -69,7 +74,7 @@ const Deck = () => {
 
   // runs when user clicks on button to draw card. Will setClicked to True, which then triggers the useEffect to drawCard
   const toggleDraw = () => {
-    setClicked(clicked => !clicked)
+    setAutoDraw(auto => !auto)
   }
 
   //
@@ -85,7 +90,11 @@ const Deck = () => {
 
   return (
     <div className="Deck">
-      <button onClick={toggleDraw}>DRAW!</button>
+      {remaining === 0 ? null : (
+        <button onClick={toggleDraw}>
+          {autoDraw ? 'STOP' : 'KEEP'} DRAWING FOR ME!
+        </button>
+      )}
       <button onClick={shuffle}>SHUFFLE</button>
       {remaining === 0 ? null : <span>Remaining: {remaining - 1}</span>}
       <div className="Deck-cardarea">{cards}</div>
